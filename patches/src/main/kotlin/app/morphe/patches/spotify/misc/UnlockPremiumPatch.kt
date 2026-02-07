@@ -115,6 +115,8 @@ val unlockPremiumPatch = bytecodePatch(
             )
         }
 
+        val contextMenuViewModelClassDef = contextMenuViewModelClassFingerprint.originalClassDef
+
         // Patch for newest versions.
         // Overwrite the context menu items list with a filtered version which does not include items which are
         // Premium ads.
@@ -158,20 +160,21 @@ val unlockPremiumPatch = bytecodePatch(
             )
         }
 
-        contextMenuViewModelConstructorFingerprint.match(contextMenuViewModelClassDef).method.apply {
-            val itemsListParameter = parameters.indexOfFirst { it.type == "Ljava/util/List;" } + 1
-            val filterContextMenuItemsDescriptor =
-                "$EXTENSION_CLASS_DESCRIPTOR->filterContextMenuItems(Ljava/util/List;)Ljava/util/List;"
+        classDefForEach { classDef ->
+            contextMenuViewModelConstructorFingerprint.matchOrNull(classDef)?.method?.apply {
+                val itemsListParameter = parameters.indexOfFirst { it.type == "Ljava/util/List;" } + 1
+                val filterContextMenuItemsDescriptor =
+                    "$EXTENSION_CLASS_DESCRIPTOR->filterContextMenuItems(Ljava/util/List;)Ljava/util/List;"
 
-            addInstructions(
-                0,
-                """
+                addInstructions(
+                    0,
+                    """
                     invoke-static { p$itemsListParameter }, $filterContextMenuItemsDescriptor
                     move-result-object p$itemsListParameter
                 """
-            )
+                )
+            }
         }
-
 
         val protobufArrayListClassDef = with(protobufListsFingerprint.originalMethod) {
             val emptyProtobufListGetIndex = indexOfFirstInstructionOrThrow(Opcode.SGET_OBJECT)
