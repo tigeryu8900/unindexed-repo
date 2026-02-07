@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared with YouTube and YT Music -->
+<!--
+    Strings with new lines must be raw strings where they're wrapped in quotes and new lines are not encoded.
+    Raw strings still requires escaping embedded double quotes but escaping embedded single quotes is optional.
+
+    Raw strings are required because Crowdin AI translations regularly gets confused and
+    replace \n with an encoded new line character.
+
+    Bad:
+        <string name="summary_key">First \'item\' text\nSecond \"item\" text</string>
+
+    Good:
+        <string name="summary_key">"First 'item' text
+Second \"item\" text"</string>
+
+-->
+<resources>
+  <!-- layout.branding.baseCustomBrandingPatch -->
+  <string name="morphe_custom_branding_name_title">Tên ứng dụng</string>
+  <!-- Translations of this should be identical to morphe_custom_branding_icon_entry_5 -->
+  <string name="morphe_custom_branding_name_entry_5">Tùy chỉnh</string>
+  <string name="morphe_custom_branding_icon_title">Biểu tượng ứng dụng</string>
+  <string name="morphe_custom_branding_icon_entry_1">Gốc</string>
+  <string name="morphe_custom_branding_icon_entry_2">Morphe đen</string>
+  <string name="morphe_custom_branding_icon_entry_3">Morphe tối</string>
+  <string name="morphe_custom_branding_icon_entry_4">Morphe sáng</string>
+  <!-- Translations of this should be identical to morphe_custom_branding_name_entry_5 -->
+  <string name="morphe_custom_branding_icon_entry_5">Morphe tỉ lệ</string>
+  <!-- If any of these experimental strings are changed then also change the hard coded values in the patch for Reddit -->
+  <!-- misc.checks.experimentalAppNoticePatch -->
+  <string name="morphe_experimental_app_version_dialog_title">⚠️ Cảnh báo thử nghiệm! ⚠️</string>
+  <string name="morphe_experimental_app_version_dialog_message">"Bạn đang dùng phiên bản thử nghiệm là &lt;b&gt;%1$s&lt;/b&gt; ⚠️
+&lt;br/&gt;&lt;br/&gt;
+🔧 Ứng dụng có thể hoạt động không ổn định hoặc gặp lỗi không xác định, vì các bản vá chưa được tinh chỉnh cho phiên bản này.
+&lt;br/&gt;&lt;br/&gt;
+Nếu bạn muốn có trải nghiệm ổn định và ít lỗi, thì hãy &lt;b&gt;gỡ cài đặt&lt;/b&gt; phiên bản này và  vá phiên bản đề xuất là &lt;b&gt;%2$s&lt;/b&gt; ✅"</string>
+  <string name="morphe_experimental_app_version_dialog_confirm">⚠️ Tôi muốn thử</string>
+  <string name="morphe_experimental_app_version_dialog_open_homepage">✅ Thôi ổn định vậy</string>
+  <!-- misc.dns.checkWatchHistoryDomainNameResolutionPatch -->
+  <string name="morphe_check_watch_history_domain_name_dialog_title">Thông báo Morphe</string>
+  <string name="morphe_check_watch_history_domain_name_dialog_message">Nhật ký xem của bạn hiện không được lưu lại.&lt;br&gt;&lt;br&gt;Nguyên nhân có thể là do trình chặn quảng cáo DNS hoặc proxy mạng.&lt;br&gt;&lt;br&gt;Để khắc phục, hãy thêm &lt;b&gt;s.youtube.com&lt;/b&gt; vào danh sách cho phép, hoặc tắt tất cả trình chặn DNS và proxy.</string>
+  <string name="morphe_check_watch_history_domain_name_dialog_ignore">Không hiện lại</string>
+  <!-- misc.fix.playback.spoofVideoStreamsPatch -->
+  <string name="morphe_spoof_video_streams_screen_title">Giả mạo luồng phát video</string>
+  <string name="morphe_spoof_video_streams_screen_summary">Giả mạo luồng phát video của ứng dụng khách nhằm ngăn chặn lỗi khi phát</string>
+  <string name="morphe_spoof_video_streams_title">Giả mạo luồng phát video</string>
+  <string name="morphe_spoof_video_streams_summary_on">"Luồng phát video đã được giả mạo
+
+Nếu bạn đã mua gói Premium thì cài đặt này có thể không cần thiết"</string>
+  <string name="morphe_spoof_video_streams_summary_off">"Luồng phát video không được giả mạo
+
+Có thể gặp lỗi khi phát."</string>
+  <string name="morphe_spoof_video_streams_no_clients_toast">Không thể lấy bất kỳ luồng phát nào</string>
+  <string name="morphe_spoof_video_streams_user_dialog_message">Tắt cài đặt này có thể gây ra lỗi khi phát.</string>
+  <!-- "Spoof video streams" must use the same translation as morphe_spoof_video_streams_title.
+         "Sign in to Android VR" must use the same translation as morphe_spoof_video_streams_sign_in_android_vr_about_title -->
+  <string name="morphe_spoof_video_streams_no_clients_suggest_vr_toast">Hãy thử bật: Giả mạo luồng phát video &gt; Đăng nhập Android VR</string>
+  <string name="morphe_spoof_video_streams_client_type_title">Ứng dụng khách mặc định</string>
+  <!-- Ensure this translation matches the translation of morphe_spoof_video_streams_no_clients_suggest_vr_toast -->
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_about_title">Đăng nhập Android VR</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_about_summary">Chưa đăng nhập Android VR. Bấm vào đây để đăng nhập</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_about_summary_signed_in">Đã đăng nhập vào Android VR</string>
+  <!-- "Default client" must be the same translated text as morphe_spoof_video_streams_client_type_title -->
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_about_summary_disabled">Để dùng tính năng này, thay đổi \'Ứng dụng khách mặc định\' thành Android VR</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_dialog_title">Đăng nhập vào Android VR</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_dialog_not_signed_in_message">"Đăng nhập vào Android VR có thể khắc phục sự cố phát cho một số người dùng 
+
+Để đăng nhập, ấn tiếp tục ở bên dưới"</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_dialog_continue">Tiếp tục</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_dialog_reset">Đăng xuất</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_activation_code_dialog_title">Hướng dẫn</string>
+  <!-- "Open website" must use the same translation as morphe_spoof_video_streams_sign_in_android_vr_activation_code_dialog_open_website -->
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_activation_code_dialog_message">"Mã kích hoạt: %s
+
+1. Bấm 'Mở trang web' dưới đây để mở trang web 'Kết nối thiết bị'
+2. Dán từ bảng nhớ tạm (hoặc gõ trực tiếp) mã kích hoạt được hiển thị ở trên
+3. Đăng nhập vào Google nếu được yêu cầu. Nếu bạn có nhiều tài khoản thì chọn tài khoản YouTube này
+4. Bấm 'Cho phép' YouTube VR truy cập
+5. Quay lại ứng dụng sau khi nhận được thông báo 'Kết nối thiết bị thành công'"</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_activation_code_dialog_open_website">Mở trang web</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_toast_get_activation_code_failed">Thất bại khi cấp mã kích hoạt</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_toast_get_authorization_code_failed">Thất bại khi cấp mã xác thực</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_success_dialog_title">Đã đăng nhập thành công</string>
+  <string name="morphe_spoof_video_streams_sign_in_android_vr_success_dialog_message">"Đã lưu xác thực
+
+• Các cài đặt Morphe của bạn sẽ không nhập/xuất xác thực Android VR
+• Nếu ứng dụng này không được sử dụng trong 6 tháng thì Google sẽ xóa xác thực này
+• Nếu bạn thay đổi mật khẩu Google hoặc xóa bỏ cài đặt thiết bị này khỏi cài đặt Google thì cần đăng nhập lại"</string>
+  <string name="morphe_oauth2_connection_failure_timeout">OAuth2 tạm thời không khả dụng (API đã hết thời gian chờ)</string>
+  <string name="morphe_oauth2_connection_failure_status_400">Phiên đăng nhập vào Android VR đã hết hạn, hãy thử đăng nhập vào VR lại</string>
+  <string name="morphe_oauth2_connection_failure_status">OAuth2 tạm thời không khả dụng (trạng thái %d)</string>
+  <string name="morphe_oauth2_connection_failure_generic">OAuth2 tạm thời không khả dụng</string>
+  <string name="morphe_oauth2_connection_failure_auth_not_approved">Không thể đăng nhập vào VR, xác thực trang web đã không được chấp thuận</string>
+  <string name="morphe_oauth2_connection_failure_auth_error">Không thể đăng nhập vào VR: %s</string>
+  <string name="morphe_oauth2_toast_reset">Đã đăng xuất khỏi Android VR</string>
+  <string name="morphe_oauth2_toast_invalid">Token đăng nhập VR không hợp lệ, hãy thử đăng nhập vào VR lại</string>
+  <!-- misc.audio.forceOriginalAudioPatch -->
+  <string name="morphe_force_original_audio_title">Buộc ngôn ngữ âm thanh gốc</string>
+  <string name="morphe_force_original_audio_summary_on">Đang dùng ngôn ngữ âm thanh gốc</string>
+  <string name="morphe_force_original_audio_summary_off">Đang dùng âm thanh mặc định</string>
+  <!-- 'Spoof video streams' should be the same translation used for 'morphe_spoof_video_streams_screen_title'. -->
+  <string name="morphe_force_original_audio_not_available">Để dùng tính năng này, hãy đổi \'Giả mạo luồng phát video\' thành bất kỳ ứng dụng khách nào ngoại trừ Android Studio</string>
+  <!-- misc.privacy.sanitizeSharingLinksPatch -->
+  <string name="morphe_sanitize_sharing_links_title">Rút gọn liên kết chia sẻ</string>
+  <string name="morphe_sanitize_sharing_links_summary_on">Tham số truy vấn theo dõi bị loại bỏ khỏi các liên kết được chia sẻ</string>
+  <string name="morphe_sanitize_sharing_links_summary_off">Tham số truy vấn theo dõi không bị loại bỏ khỏi các liên kết được chia sẻ</string>
+  <string name="morphe_replace_music_with_youtube_title">Thay đổi liên kết chia sẻ thành youtube.com</string>
+  <string name="morphe_replace_music_with_youtube_summary_on">Liên kết chia sẻ bắt đầu bằng youtube.com</string>
+  <string name="morphe_replace_music_with_youtube_summary_off">Liên kết chia sẻ bắt đầu bằng music.youtube.com</string>
+</resources>
