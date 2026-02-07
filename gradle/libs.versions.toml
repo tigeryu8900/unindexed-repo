@@ -7,9 +7,10 @@ annotation = "1.9.1"
 desugar = "2.1.5"
 gson = "2.13.2"
 guava = "33.5.0-jre"
+hiddenapi = "6.1"
+nanohttpd = "2.3.1"
 protobuf = "0.9.5"
 protoc = "3.25.2"
-hiddenapi = "6.1"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -19,6 +20,7 @@ guava = { module = "com.google.guava:guava", version.ref = "guava" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protoc" }
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protoc" }
 hiddenapi = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenapi" }
+nanohttpd = { module = "org.nanohttpd:nanohttpd", version.ref = "nanohttpd" }
 
 [plugins]
 android-library = { id = "com.android.library" }
