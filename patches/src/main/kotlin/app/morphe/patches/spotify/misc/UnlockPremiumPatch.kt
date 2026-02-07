@@ -115,8 +115,6 @@ val unlockPremiumPatch = bytecodePatch(
             )
         }
 
-        val contextMenuViewModelClassDef = contextMenuViewModelClassFingerprint.originalClassDef
-
         // Patch for newest versions.
         // Overwrite the context menu items list with a filtered version which does not include items which are
         // Premium ads.
