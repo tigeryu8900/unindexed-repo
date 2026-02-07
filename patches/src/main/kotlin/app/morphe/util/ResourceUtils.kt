@@ -45,6 +45,32 @@ import java.nio.file.StandardCopyOption
 
 private val classLoader = object {}.javaClass.classLoader
 
+@Suppress("UNCHECKED_CAST")
+fun Patch<*>.getStringOptionValue(key: String) =
+    options[key] as Option<String>
+
+@Suppress("UNCHECKED_CAST")
+fun Patch<*>.getBooleanOptionValue(key: String) =
+    options[key] as Option<Boolean>
+
+fun Option<String>.valueOrThrow() = value
+    ?: throw PatchException("Invalid patch option: $title.")
+
+fun Option<Int?>.valueOrThrow() = value
+    ?: throw PatchException("Invalid patch option: $title.")
+
+fun Option<String>.lowerCaseOrThrow() = valueOrThrow()
+    .lowercase()
+
+fun Option<String>.underBarOrThrow() = lowerCaseOrThrow()
+    .replace(" ", "_")
+
+fun Node.cloneNodes(parent: Node) {
+    val node = cloneNode(true)
+    parent.appendChild(node)
+    parent.removeChild(this)
+}
+
 /**
  * Removes a node from its parent.
  *
