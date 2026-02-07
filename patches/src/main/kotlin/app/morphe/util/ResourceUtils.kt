@@ -45,21 +45,6 @@ import java.nio.file.StandardCopyOption
 
 private val classLoader = object {}.javaClass.classLoader
 
-fun Option<String>.valueOrThrow() = value
-    ?: throw PatchException("Invalid patch option: $title.")
-
-fun Option<String>.lowerCaseOrThrow() = valueOrThrow()
-    .lowercase()
-
-fun Option<String>.underBarOrThrow() = lowerCaseOrThrow()
-    .replace(" ", "_")
-
-fun Node.cloneNodes(parent: Node) {
-    val node = cloneNode(true)
-    parent.appendChild(node)
-    parent.removeChild(this)
-}
-
 /**
  * Removes a node from its parent.
  *
