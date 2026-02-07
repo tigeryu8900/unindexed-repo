@@ -11,7 +11,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableLongEncodedValue
 import app.morphe.patches.shared.extension.Constants.EXTENSION_PATCH_STATUS_CLASS_DESCRIPTOR
 import app.morphe.patches.shared.extension.Constants.EXTENSION_UTILS_CLASS_DESCRIPTOR
-import app.morphe.util.findMethodsOrThrow
+import app.morphe.util.mutableClassDefByOrNull
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableLongEncodedValue
@@ -49,15 +49,17 @@ fun sharedExtensionPatch(
     }
 
     finalize {
-        findMethodsOrThrow(EXTENSION_PATCH_STATUS_CLASS_DESCRIPTOR).apply {
-            find { method -> method.name == "PatchedTime" }
-                ?.replaceInstruction(
+        var mutableClassDef = mutableClassDefByOrNull(EXTENSION_PATCH_STATUS_CLASS_DESCRIPTOR)
+            ?: throw PatchException("No matching methods found in: $EXTENSION_PATCH_STATUS_CLASS_DESCRIPTOR")
+
+        mutableClassDef.methods.forEach { method ->
+            when (method.name) {
+                "PatchedTime" -> method.replaceInstruction(
                     0,
                     "const-wide v0, ${MutableLongEncodedValue(ImmutableLongEncodedValue(System.currentTimeMillis()))}L"
                 )
 
-            find { method -> method.name == "PatchVersion" }
-                ?.apply {
+                "PatchVersion" -> method.apply {
                     val manifest = object {}
                         .javaClass
                         .classLoader
