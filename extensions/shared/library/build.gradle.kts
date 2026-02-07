@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "app.morphe.extension"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 28
     }
 
     compileOptions {
