@@ -3,7 +3,6 @@ package app.morphe.patches.spotify.extended.branding.name
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.util.Utils.printInfo
-import app.morphe.util.valueOrThrow
 import java.io.FileWriter
 import java.nio.file.Files
 
