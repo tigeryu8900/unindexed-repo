@@ -3,6 +3,7 @@ package app.morphe.extension.spotify.shared;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.ResourceType;
 import app.morphe.extension.shared.ResourceUtils;
 
 public final class ComponentFilters {
@@ -20,22 +21,22 @@ public final class ComponentFilters {
 
     public static final class ResourceIdComponentFilter implements ComponentFilter {
 
+        public final ResourceType resourceType;
         public final String resourceName;
-        public final String resourceType;
         // Android resources are always positive, so -1 is a valid sentinel value to indicate it has not been loaded.
         // 0 is returned when a resource has not been found.
         private int resourceId = -1;
         @Nullable
         private String stringfiedResourceId;
 
-        public ResourceIdComponentFilter(String resourceName, String resourceType) {
-            this.resourceName = resourceName;
+        public ResourceIdComponentFilter(ResourceType resourceType, String resourceName) {
             this.resourceType = resourceType;
+            this.resourceName = resourceName;
         }
 
         public int getResourceId() {
             if (resourceId == -1) {
-                resourceId = ResourceUtils.getIdentifier(resourceName, resourceType);
+                resourceId = ResourceUtils.getIdentifier(resourceType, resourceName);
             }
             return resourceId;
         }
