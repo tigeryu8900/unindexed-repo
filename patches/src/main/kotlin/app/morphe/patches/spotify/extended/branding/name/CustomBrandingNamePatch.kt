@@ -18,7 +18,7 @@ val customBrandingNamePatch = resourcePatch(
 ) {
     compatibleWith("com.spotify.music")
 
-    val appNameOption = stringOption(
+    val appNameOption: Option<String> = stringOption(
         key = "appName",
         default = ORIGINAL_APP_NAME,
         values = mapOf(
