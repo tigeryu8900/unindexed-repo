@@ -27,7 +27,7 @@ val changeLyricsProviderPatch = bytecodePatch(
 ) {
     compatibleWith(
         "com.spotify.music"(
-            "9.0.90.1229",
+            "9.1.20.1452",
         ),
     )
 
