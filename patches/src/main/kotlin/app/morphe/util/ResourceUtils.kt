@@ -1,52 +1,76 @@
+/*
+ * Copyright 2025 Morphe.
+ * https://github.com/morpheapp/morphe-patches
+ *
+ * File-Specific License Notice (GPLv3 Section 7 Additional Permission).
+ *
+ * This file is part of the Morphe patches project and is licensed under
+ * the GNU General Public License version 3 (GPLv3), with the Additional
+ * Terms under Section 7 described in the Morphe patches LICENSE file.
+ *
+ * https://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * File-Specific Exception to Section 7b:
+ * -------------------------------------
+ * Section 7b (Attribution Requirement) of the Morphe patches LICENSE
+ * does not apply to THIS FILE. Use of this file does NOT require any
+ * user-facing, in-application, or UI-visible attribution.
+ *
+ * For this file only, attribution under Section 7b is satisfied by
+ * retaining this comment block in the source code of this file.
+ *
+ * Distribution and Derivative Works:
+ * ----------------------------------
+ * This comment block MUST be preserved in all copies, distributions,
+ * and derivative works of this file, whether in source or modified
+ * form.
+ *
+ * All other terms of the Morphe Patches LICENSE, including Section 7c
+ * (Project Name Restriction) and the GPLv3 itself, remain fully
+  * applicable to this file.
+ */
 package app.morphe.util
 
-import app.morphe.patcher.patch.Option
-import app.morphe.patcher.patch.Patch
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.ResourcePatchContext
 import app.morphe.patcher.util.Document
-import app.morphe.util.Utils.printWarn
+import app.morphe.util.resource.BaseResource
+import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
-import java.io.File
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 private val classLoader = object {}.javaClass.classLoader
 
+/**
+ * Removes a node from its parent.
+ *
+ * @return The node that was removed (object this method was called on).
+ */
+fun Node.removeFromParent() : Node = parentNode.removeChild(this)
+
+/**
+ * Returns a sequence for all child nodes.
+ */
+fun NodeList.asSequence() = (0 until this.length).asSequence().map { this.item(it) }
+
+/**
+ * Returns a sequence for all child nodes.
+ */
 @Suppress("UNCHECKED_CAST")
-fun Patch<*>.getStringOptionValue(key: String) =
-    options[key] as Option<String>
+fun Node.childElementsSequence() =
+    this.childNodes.asSequence().filter { it.nodeType == Node.ELEMENT_NODE } as Sequence<Element>
 
-@Suppress("UNCHECKED_CAST")
-fun Patch<*>.getBooleanOptionValue(key: String) =
-    options[key] as Option<Boolean>
-
-fun Option<String>.valueOrThrow() = value
-    ?: throw PatchException("Invalid patch option: $title.")
-
-fun Option<Int?>.valueOrThrow() = value
-    ?: throw PatchException("Invalid patch option: $title.")
-
-fun Option<String>.lowerCaseOrThrow() = valueOrThrow()
-    .lowercase()
-
-fun Option<String>.underBarOrThrow() = lowerCaseOrThrow()
-    .replace(" ", "_")
-
-fun Node.adoptChild(tagName: String, block: Element.() -> Unit) {
-    val child = ownerDocument.createElement(tagName)
-    child.block()
-    appendChild(child)
-}
-
-fun Node.cloneNodes(parent: Node) {
-    val node = cloneNode(true)
-    parent.appendChild(node)
-    parent.removeChild(this)
-}
+/**
+ * Performs the given [action] on each child element.
+ */
+inline fun Node.forEachChildElement(action: (Element) -> Unit) =
+    childElementsSequence().forEach {
+        action(it)
+    }
 
 /**
  * Recursively traverse the DOM tree starting from the given root node.
@@ -56,232 +80,17 @@ fun Node.cloneNodes(parent: Node) {
 fun Node.doRecursively(action: (Node) -> Unit) {
     action(this)
     val childNodes = this.childNodes
-    for (i in 0 until childNodes.length) childNodes.item(i).doRecursively(action)
-}
-
-fun List<String>.getResourceGroup(fileNames: Array<String>) = map { directory ->
-    ResourceGroup(
-        directory, *fileNames
-    )
-}
-
-private fun ResourcePatchContext.getMipMapPath(): String {
-    var path: String
-    document("AndroidManifest.xml").use { document ->
-        val manifestElement = document.getNode("application") as Element
-        val mipmapResourceFile = manifestElement.getAttribute("android:icon").split("/")[1]
-        path = "res/mipmap-anydpi/$mipmapResourceFile.xml"
-    }
-    return path
-}
-
-private fun ResourcePatchContext.getAdaptiveIconResourceFile(tag: String): String {
-    val path = getMipMapPath()
-    document(path).use { document ->
-        val adaptiveIcon = document
-            .getElementsByTagName("adaptive-icon")
-            .item(0) as Element
-
-        val childNodes = adaptiveIcon.childNodes
-        for (i in 0 until childNodes.length) {
-            val node = childNodes.item(i)
-            if (node is Element && node.tagName == tag && node.hasAttribute("android:drawable")) {
-                return node.getAttribute("android:drawable").split("/")[1]
-            }
-        }
-        throw PatchException("Element not found: $tag")
+    for (i in 0 until childNodes.length) {
+        childNodes.item(i).doRecursively(action)
     }
 }
 
-private fun ResourcePatchContext.getAdaptiveIconBackgroundResourceFile() =
-    getAdaptiveIconResourceFile("background")
-
-private fun ResourcePatchContext.getAdaptiveIconForegroundResourceFile() =
-    getAdaptiveIconResourceFile("foreground")
-
-private fun ResourcePatchContext.getAdaptiveIconMonoChromeResourceFile() =
-    getAdaptiveIconResourceFile("monochrome")
-
-fun ResourcePatchContext.copyAdaptiveIcon(
-    adaptiveIconBackgroundFileName: String,
-    adaptiveIconForegroundFileName: String,
-    mipmapDirectories: List<String>,
-    adaptiveIconMonoChromeFileName: String? = null,
-) {
-    mapOf(
-        adaptiveIconBackgroundFileName to getAdaptiveIconBackgroundResourceFile(),
-        adaptiveIconForegroundFileName to getAdaptiveIconForegroundResourceFile()
-    ).forEach { (oldIconResourceFile, newIconResourceFile) ->
-        if (oldIconResourceFile != newIconResourceFile) {
-            mipmapDirectories.forEach {
-                val mipmapDirectory = get("res").resolve(it)
-                FilesCompat.copy(
-                    mipmapDirectory.resolve("$oldIconResourceFile.png"),
-                    mipmapDirectory.resolve("$newIconResourceFile.png")
-                )
-            }
-        }
+fun Node.insertFirst(node: Node) {
+    if (hasChildNodes()) {
+        insertBefore(node, firstChild)
+    } else {
+        appendChild(node)
     }
-
-    if (adaptiveIconMonoChromeFileName != null &&
-        adaptiveIconMonoChromeFileName != getAdaptiveIconMonoChromeResourceFile()
-    ) {
-        val drawableDirectory = get("res").resolve("drawable")
-        FilesCompat.copy(
-            drawableDirectory.resolve("$adaptiveIconMonoChromeFileName.xml"),
-            drawableDirectory.resolve("${getAdaptiveIconMonoChromeResourceFile()}.xml")
-        )
-    }
-}
-
-fun ResourcePatchContext.appendAppVersion(
-    appVersion: String,
-    key: String = "revanced_spoof_app_version_target"
-) {
-    addEntryValues(
-        "${key}_entries",
-        "@string/${key}_entry_" + appVersion.replace(".", "_"),
-        prepend = false
-    )
-    addEntryValues(
-        "${key}_entry_values",
-        appVersion,
-        prepend = false
-    )
-}
-
-fun ResourcePatchContext.addEntryValues(
-    attributeName: String,
-    attributeValue: String,
-    path: String = "res/values/arrays.xml",
-    prepend: Boolean = true,
-) {
-    document(path).use { document ->
-        with(document) {
-            val resourcesNode = documentElement
-            val childNodes = resourcesNode.childNodes
-            val newElement: Element = createElement("item")
-            for (i in 0 until childNodes.length) {
-                val node = childNodes.item(i) as? Element ?: continue
-
-                if (node.getAttribute("name") == attributeName) {
-                    newElement.appendChild(createTextNode(attributeValue))
-
-                    if (prepend) {
-                        node.appendChild(newElement)
-                    } else {
-                        node.insertBefore(newElement, node.firstChild)
-                    }
-                    break
-                }
-            }
-        }
-    }
-}
-
-fun ResourcePatchContext.copyFile(
-    resourceGroup: List<ResourceGroup>,
-    path: String,
-    warning: String
-): Boolean {
-    resourceGroup.let { resourceGroups ->
-        try {
-            val filePath = File(path)
-            val resourceDirectory = get("res")
-
-            resourceGroups.forEach { group ->
-                val fromDirectory = filePath.resolve(group.resourceDirectoryName)
-                val toDirectory = resourceDirectory.resolve(group.resourceDirectoryName)
-
-                group.resources.forEach { iconFileName ->
-                    FilesCompat.copy(
-                        fromDirectory.resolve(iconFileName),
-                        toDirectory.resolve(iconFileName)
-                    )
-                }
-            }
-
-            return true
-        } catch (_: Exception) {
-            printWarn(warning)
-        }
-    }
-    return false
-}
-
-fun ResourcePatchContext.removeOverlayBackground(
-    files: Array<String>,
-    targetId: Array<String>,
-) {
-    files.forEach { file ->
-        val resourceDirectory = get("res")
-        val targetXmlPath = resourceDirectory.resolve("layout").resolve(file)
-
-        if (targetXmlPath.exists()) {
-            targetId.forEach { identifier ->
-                document("res/layout/$file").use { document ->
-                    document.doRecursively {
-                        arrayOf("height", "width").forEach replacement@{ replacement ->
-                            if (it !is Element) return@replacement
-
-                            if (it.attributes.getNamedItem("android:id")?.nodeValue?.endsWith(
-                                    identifier
-                                ) == true
-                            ) {
-                                it.getAttributeNode("android:layout_$replacement")
-                                    ?.let { attribute ->
-                                        attribute.textContent = "0.0dip"
-                                    }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-fun ResourcePatchContext.removeStringsElements(
-    replacements: Array<String>
-) {
-    var languageList = emptyArray<String>()
-    val resourceDirectory = get("res")
-    val dir = resourceDirectory.listFiles()
-    for (file in dir!!) {
-        val path = file.name
-        if (path.startsWith("values")) {
-            val targetXml = resourceDirectory.resolve(path).resolve("strings.xml")
-            if (targetXml.exists()) languageList += path
-        }
-    }
-    removeStringsElements(languageList, replacements)
-}
-
-fun ResourcePatchContext.removeStringsElements(
-    paths: Array<String>,
-    replacements: Array<String>
-) {
-    paths.forEach { path ->
-        val resourceDirectory = get("res")
-        val targetXmlPath = resourceDirectory.resolve(path).resolve("strings.xml")
-
-        if (targetXmlPath.exists()) {
-            val targetXml = get("res/$path/strings.xml")
-
-            replacements.forEach replacementsLoop@{ replacement ->
-                targetXml.writeText(
-                    targetXml.readText()
-                        .replaceFirst(""" {4}<string name="$replacement".+""".toRegex(), "")
-                )
-            }
-        }
-    }
-}
-
-fun Node.insertNode(tagName: String, targetNode: Node, block: Element.() -> Unit) {
-    val child = ownerDocument.createElement(tagName)
-    child.block()
-    parentNode.insertBefore(child, targetNode)
 }
 
 /**
@@ -294,104 +103,29 @@ fun ResourcePatchContext.copyResources(
     sourceResourceDirectory: String,
     vararg resources: ResourceGroup,
 ) {
-    val resourceDirectory = get("res")
+    val targetResourceDirectory = this["res", false]
 
     for (resourceGroup in resources) {
         resourceGroup.resources.forEach { resource ->
-            val resourceDirectoryName = resourceGroup.resourceDirectoryName
-            val targetDirectory = resourceDirectory.resolve(resourceDirectoryName)
-            if (!targetDirectory.isDirectory) targetDirectory.mkdirs()
-            val resourceFile = "$resourceDirectoryName/$resource"
-            inputStreamFromBundledResource(
-                sourceResourceDirectory,
-                resourceFile
-            )?.let { inputStream ->
-                FilesCompat.copy(
-                    inputStream,
-                    resourceDirectory.resolve(resourceFile),
-                )
+            // Create the target directory if it doesn't exist.
+            Files.createDirectories(
+                targetResourceDirectory.resolve(resourceGroup.resourceDirectoryName).toPath()
+            )
+
+            val resourceFile = "${resourceGroup.resourceDirectoryName}/$resource"
+            val stream = inputStreamFromBundledResource(sourceResourceDirectory, resourceFile)
+            if (stream == null) {
+                throw IllegalArgumentException("Could not find resource: $resourceFile " +
+                        "in directory: $sourceResourceDirectory")
             }
+            Files.copy(
+                stream,
+                targetResourceDirectory.resolve(resourceFile).toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+            )
         }
     }
 }
-
-/**
- * Copy resources from the current class loader to the resource directory with the option to rename.
- *
- * @param sourceResourceDirectory The source resource directory name.
- * @param resourceMap The map containing resource titles and their respective path data.
- */
-fun ResourcePatchContext.copyResourcesWithRename(
-    sourceResourceDirectory: String,
-    resourceMap: Map<String, String>
-) {
-    val targetResourceDirectory = this["res"]
-
-    for ((title, pathData) in resourceMap) {
-        // Check if pathData is another title
-        if (resourceMap.containsKey(pathData)) {
-            continue // Skip copying if the pathData is another title
-        }
-
-        val resourceFile = "drawable/icon.xml"
-        val inputStream = inputStreamFromBundledResource(sourceResourceDirectory, resourceFile)!!
-        val targetFile = targetResourceDirectory.resolve("drawable/$title.xml").toPath()
-
-        Files.copy(inputStream, targetFile, StandardCopyOption.REPLACE_EXISTING)
-
-        // Update the XML with the new path data
-        document(targetFile.toString()).use { document ->
-            updatePathData(document, pathData)
-        }
-    }
-}
-
-/**
- * Update the `android:pathData` attribute in the XML document.
- *
- * @param document The XML document.
- * @param pathData The new path data to set.
- */
-fun updatePathData(document: org.w3c.dom.Document, pathData: String) {
-    val elements = document.getElementsByTagName("path")
-    for (i in 0 until elements.length) {
-        val pathElement = elements.item(i) as? Element
-        pathElement?.setAttribute("android:pathData", pathData)
-    }
-}
-
-/**
- * Delete resources from the resource directory.
- *
- * @param resources The resources to delete.
- */
-fun ResourcePatchContext.removeResources(
-    vararg resources: ResourceGroup,
-    createDirectoryIfNotExist: Boolean = false,
-) {
-    val resourceDirectory = get("res")
-
-    for (resourceGroup in resources) {
-        resourceGroup.resources.forEach { resource ->
-            val resourceDirectoryName = resourceGroup.resourceDirectoryName
-            if (createDirectoryIfNotExist) {
-                val targetDirectory = resourceDirectory.resolve(resourceDirectoryName)
-                if (!targetDirectory.isDirectory) Files.createDirectories(targetDirectory.toPath())
-            }
-            val resourceFile = "$resourceDirectoryName/$resource"
-            val targetFile = resourceDirectory.resolve(resourceFile)
-            if(targetFile.exists()) {
-                Files.delete(targetFile.toPath())
-            }
-        }
-    }
-}
-
-internal fun inputStreamFromBundledResourceOrThrow(
-    sourceResourceDirectory: String,
-    resourceFile: String,
-) = classLoader.getResourceAsStream("$sourceResourceDirectory/$resourceFile")
-    ?: throw PatchException("Could not find $resourceFile")
 
 internal fun inputStreamFromBundledResource(
     sourceResourceDirectory: String,
@@ -406,27 +140,18 @@ internal fun inputStreamFromBundledResource(
 class ResourceGroup(val resourceDirectoryName: String, vararg val resources: String)
 
 /**
- * Copy resources from the current class loader to the resource directory.
- * @param resourceDirectory The directory of the resource.
- * @param targetResource The target resource.
- * @param elementTag The element to copy.
+ * Iterate through the children of a node by its tag.
+ * @param resource The xml resource.
+ * @param targetTag The target xml node.
+ * @param callback The callback to call when iterating over the nodes.
  */
-fun ResourcePatchContext.copyXmlNode(
-    resourceDirectory: String,
-    targetResource: String,
-    elementTag: String
-) = inputStreamFromBundledResource(
-    resourceDirectory,
-    targetResource
-)?.let { inputStream ->
-    val outputPath = "res/$targetResource"
-    if (get(outputPath).exists()) {
-        // Copy nodes from the resources node to the real resource node
-        elementTag.copyXmlNode(
-            document(inputStream),
-            document(outputPath),
-        ).close()
-    }
+fun ResourcePatchContext.iterateXmlNodeChildren(
+    resource: String,
+    targetTag: String,
+    callback: (node: Node) -> Unit,
+) = document(classLoader.getResourceAsStream(resource)!!).use { document ->
+    val stringsNode = document.getElementsByTagName(targetTag).item(0).childNodes
+    for (i in 1 until stringsNode.length - 1) callback(stringsNode.item(i))
 }
 
 /**
@@ -440,7 +165,6 @@ fun String.copyXmlNode(
     target: Document,
 ): AutoCloseable {
     val hostNodes = source.getElementsByTagName(this).item(0).childNodes
-
     val destinationNode = target.getElementsByTagName(this).item(0)
 
     for (index in 0 until hostNodes.length) {
@@ -455,8 +179,26 @@ fun String.copyXmlNode(
     }
 }
 
-internal fun org.w3c.dom.Document.getNode(tagName: String) =
-    this.getElementsByTagName(tagName).item(0)
+/**
+ * Add a resource node child.
+ *
+ * @param resource The resource to add.
+ * @param resourceCallback Called when a resource has been processed.
+ */
+internal fun Node.addResource(
+    resource: BaseResource,
+    resourceCallback: (BaseResource) -> Unit = { },
+) {
+    appendChild(resource.serialize(ownerDocument, resourceCallback))
+}
+
+internal fun Document.getNode(tagName: String) = getElementsByTagName(tagName).item(0)
+
+internal fun Node.adoptChild(tagName: String, block: Element.() -> Unit) {
+    val child = ownerDocument.createElement(tagName)
+    child.block()
+    appendChild(child)
+}
 
 internal fun NodeList.findElementByAttributeValue(attributeName: String, value: String): Element? {
     for (i in 0 until length) {
@@ -480,5 +222,25 @@ internal fun NodeList.findElementByAttributeValue(attributeName: String, value: 
 }
 
 internal fun NodeList.findElementByAttributeValueOrThrow(attributeName: String, value: String) =
-    findElementByAttributeValue(attributeName, value)
-        ?: throw PatchException("Could not find: $attributeName $value")
+    findElementByAttributeValue(attributeName, value) ?: throw PatchException("Could not find: $attributeName $value")
+
+internal fun Element.copyAttributesFrom(oldContainer: Element) {
+    // Copy attributes from the old element to the new element
+    val attributes = oldContainer.attributes
+    for (i in 0 until attributes.length) {
+        val attr = attributes.item(i) as Attr
+        setAttribute(attr.name, attr.value)
+    }
+}
+
+/**
+ * @return The play store services version.
+ */
+internal fun ResourcePatchContext.findPlayStoreServicesVersion(): Int =
+    document("res/values/integers.xml").use { document ->
+        document.documentElement.childNodes.findElementByAttributeValueOrThrow(
+            "name",
+            "google_play_services_version",
+        ).textContent.toInt()
+    }
+
