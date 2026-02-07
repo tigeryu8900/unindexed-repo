@@ -3,7 +3,7 @@ package app.morphe.extension.spotify.shared;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.ResourceUtils;
 
 public final class ComponentFilters {
 
@@ -35,7 +35,7 @@ public final class ComponentFilters {
 
         public int getResourceId() {
             if (resourceId == -1) {
-                resourceId = Utils.getResourceIdentifier(resourceName, resourceType);
+                resourceId = ResourceUtils.getIdentifier(resourceName, resourceType);
             }
             return resourceId;
         }

@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.ResourceUtils;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.ui.Dim;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -230,26 +231,26 @@ public class LyricsSearchManager {
 
             GradientDrawable expandedBg = new GradientDrawable();
             expandedBg.setColor(COLOR_DARK_BACKGROUND);
-            expandedBg.setCornerRadius(Utils.dipToPixels(BUTTON_CORNER_RADIUS_DP * 2));
+            expandedBg.setCornerRadius(Dim.dp(BUTTON_CORNER_RADIUS_DP * 2));
             expandedLayout.setBackground(expandedBg);
-            int expandedPaddingPx = Utils.dipToPixels(EXPANDED_LAYOUT_PADDING_DP);
+            int expandedPaddingPx = Dim.dp(EXPANDED_LAYOUT_PADDING_DP);
             expandedLayout.setPadding(expandedPaddingPx, expandedPaddingPx, expandedPaddingPx, expandedPaddingPx);
 
-            int buttonHeightPx = Utils.dipToPixels(BUTTON_HEIGHT_DP);
-            int iconButtonSizePx = Utils.dipToPixels(ICON_BUTTON_SIZE_DP);
-            int iconPaddingPx = Utils.dipToPixels(BUTTON_INTERNAL_PADDING_DP);
-            int iconMarginPx = Utils.dipToPixels(ICON_BUTTON_MARGIN_DP);
+            int buttonHeightPx = Dim.dp(BUTTON_HEIGHT_DP);
+            int iconButtonSizePx = Dim.dp(ICON_BUTTON_SIZE_DP);
+            int iconPaddingPx = Dim.dp(BUTTON_INTERNAL_PADDING_DP);
+            int iconMarginPx = Dim.dp(ICON_BUTTON_MARGIN_DP);
 
             // --- Google Search Button ---
             googleSearchButton = new Button(context);
             googleSearchButton.setText("Search Lyrics");
             googleSearchButton.setAllCaps(false);
             googleSearchButton.setTextColor(COLOR_TEXT_ON_ACCENT);
-            googleSearchButton.setPadding(Utils.dipToPixels(16), 0, Utils.dipToPixels(16), 0);
+            googleSearchButton.setPadding(Dim.dp(16), 0, Dim.dp(16), 0);
             GradientDrawable searchBg = new GradientDrawable();
             searchBg.setShape(GradientDrawable.RECTANGLE);
             searchBg.setColor(COLOR_PRIMARY_ACCENT);
-            searchBg.setCornerRadius(Utils.dipToPixels(BUTTON_CORNER_RADIUS_DP));
+            searchBg.setCornerRadius(Dim.dp(BUTTON_CORNER_RADIUS_DP));
             googleSearchButton.setBackground(searchBg);
             LinearLayout.LayoutParams searchParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, buttonHeightPx);
@@ -304,7 +305,7 @@ public class LyricsSearchManager {
                 if (parentView == null) return false;
 
                 final int action = event.getActionMasked();
-                final int edgePaddingPx = Utils.dipToPixels(EDGE_PADDING_DP);
+                final int edgePaddingPx = Dim.dp(EDGE_PADDING_DP);
 
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
@@ -331,7 +332,7 @@ public class LyricsSearchManager {
 
                             int viewHeight = lyricsButtonContainer.getHeight();
                             if (viewHeight <= 0)
-                                viewHeight = Utils.dipToPixels(ICON_BUTTON_SIZE_DP);
+                                viewHeight = Dim.dp(ICON_BUTTON_SIZE_DP);
                             newY = Math.max(edgePaddingPx, Math.min(newY, parentView.getHeight() - viewHeight - edgePaddingPx));
 
                             params.topMargin = newY;
@@ -385,9 +386,9 @@ public class LyricsSearchManager {
 
             // Set initial position if not previously set
             if (lastKnownTopMarginForMinimized == -1 && screenHeight > 0) {
-                int buttonSize = Utils.dipToPixels(ICON_BUTTON_SIZE_DP);
+                int buttonSize = Dim.dp(ICON_BUTTON_SIZE_DP);
                 // Position roughly 2x bottom margin + button size up from bottom
-                int safeBottomMargin = Utils.dipToPixels(DEFAULT_BOTTOM_MARGIN_DP * 2);
+                int safeBottomMargin = Dim.dp(DEFAULT_BOTTOM_MARGIN_DP * 2);
                 lastKnownTopMarginForMinimized = screenHeight - buttonSize - safeBottomMargin;
                 Logger.printDebug(() -> TAG + ": Initial minimized Y position set to: " + lastKnownTopMarginForMinimized);
             }
@@ -497,15 +498,15 @@ public class LyricsSearchManager {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
         );
-        int iconSizePx = Utils.dipToPixels(ICON_BUTTON_SIZE_DP);
-        int edgePaddingPx = Utils.dipToPixels(EDGE_PADDING_DP);
+        int iconSizePx = Dim.dp(ICON_BUTTON_SIZE_DP);
+        int edgePaddingPx = Dim.dp(EDGE_PADDING_DP);
 
         if (lastKnownTopMarginForMinimized <= edgePaddingPx) {
             if (screenHeight > 0) {
-                int safeBottomMargin = Utils.dipToPixels(DEFAULT_BOTTOM_MARGIN_DP * 2);
+                int safeBottomMargin = Dim.dp(DEFAULT_BOTTOM_MARGIN_DP * 2);
                 lastKnownTopMarginForMinimized = Math.max(edgePaddingPx, screenHeight - iconSizePx - safeBottomMargin);
             } else {
-                lastKnownTopMarginForMinimized = Utils.dipToPixels(400); // Fallback if screen height unknown
+                lastKnownTopMarginForMinimized = Dim.dp(400); // Fallback if screen height unknown
             }
             Logger.printDebug(() -> TAG + ": Default minimized Y position recalculated: " + lastKnownTopMarginForMinimized);
             savePosition(context);
@@ -535,7 +536,7 @@ public class LyricsSearchManager {
             params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
             params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            params.bottomMargin = Utils.dipToPixels(DEFAULT_BOTTOM_MARGIN_DP);
+            params.bottomMargin = Dim.dp(DEFAULT_BOTTOM_MARGIN_DP);
 
             // Reset margins as gravity handles positioning
             params.leftMargin = 0;
@@ -580,11 +581,11 @@ public class LyricsSearchManager {
         }
 
         int viewWidth = container.getWidth();
-        if (viewWidth <= 0) viewWidth = Utils.dipToPixels(ICON_BUTTON_SIZE_DP);
+        if (viewWidth <= 0) viewWidth = Dim.dp(ICON_BUTTON_SIZE_DP);
 
         int currentLeftMargin = params.leftMargin;
         int viewCenterX = currentLeftMargin + viewWidth / 2;
-        int edgePaddingPx = Utils.dipToPixels(EDGE_PADDING_DP);
+        int edgePaddingPx = Dim.dp(EDGE_PADDING_DP);
 
         params.gravity = Gravity.NO_GRAVITY;
 
