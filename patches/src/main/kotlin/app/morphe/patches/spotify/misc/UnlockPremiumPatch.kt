@@ -115,104 +115,61 @@ val unlockPremiumPatch = bytecodePatch(
             )
         }
 
-
-        val contextMenuViewModelClassDef = contextMenuViewModelClassFingerprint.originalClassDef
-
-        // Patch used in versions older than "9.0.60.128".
-        // Hook the method which adds context menu items and return before adding if the item is a Premium ad.
-        oldContextMenuViewModelAddItemFingerprint.matchOrNull(contextMenuViewModelClassDef)?.method?.apply {
-            val contextMenuItemInterfaceName = parameterTypes.first()
-            val contextMenuItemInterfaceClassDef = classDefByOrNull {
-                it.type == contextMenuItemInterfaceName
-            } ?: throw PatchException("Could not find context menu item interface.")
-
-            // The class returned by ContextMenuItem->getViewModel, which represents the actual context menu item we
-            // need to stringify.
-            val viewModelClassType =
-                getViewModelFingerprint.match(contextMenuItemInterfaceClassDef).originalMethod.returnType
-
-            // The instruction where the normal method logic starts.
-            val firstInstruction = getInstruction(0)
-
-            val isFilteredContextMenuItemDescriptor =
-                "$EXTENSION_CLASS_DESCRIPTOR->isFilteredContextMenuItem(Ljava/lang/Object;)Z"
-
-            addInstructionsWithLabels(
-                0,
-                """
-                    # The first parameter is the context menu item being added.
-                    # Invoke getViewModel to get the actual context menu item.
-                    invoke-interface { p1 }, $contextMenuItemInterfaceName->getViewModel()$viewModelClassType
-                    move-result-object v0
-
-                    # Check if this context menu item should be filtered out.
-                    invoke-static { v0 }, $isFilteredContextMenuItemDescriptor
-                    move-result v0
-
-                    # If this context menu item should not be filtered out, jump to the normal method logic.
-                    if-eqz v0, :normal-method-logic
-                    return-void
-                """,
-                ExternalLabel("normal-method-logic", firstInstruction)
-            )
-        }
-
         // Patch for newest versions.
         // Overwrite the context menu items list with a filtered version which does not include items which are
         // Premium ads.
-        if (oldContextMenuViewModelAddItemFingerprint.matchOrNull(contextMenuViewModelClassDef) == null) {
-            // Replace the placeholder context menu item interface name and the return value of getViewModel to the
-            // minified names used at runtime. The instructions need to match the original names so we can call the
-            // method in the extension.
-            extensionFilterContextMenuItemsFingerprint.method.apply {
-                val contextMenuItemInterfaceClassDef = removeAdsContextMenuItemClassFingerprint
-                    .originalClassDef
-                    .interfaces
-                    .firstOrNull()
-                    ?.let { interfaceName -> classDefByOrNull { it.type == interfaceName } }
-                    ?: throw PatchException("Could not find context menu item interface.")
 
-                val contextMenuItemViewModelClassName = getViewModelFingerprint
-                    .matchOrNull(contextMenuItemInterfaceClassDef)
-                    ?.originalMethod
-                    ?.returnType
-                    ?: throw PatchException("Could not find context menu item view model class.")
+        // Replace the placeholder context menu item interface name and the return value of getViewModel to the
+        // minified names used at runtime. The instructions need to match the original names so we can call the
+        // method in the extension.
+        extensionFilterContextMenuItemsFingerprint.method.apply {
+            val contextMenuItemInterfaceClassDef = removeAdsContextMenuItemClassFingerprint
+                .originalClassDef
+                .interfaces
+                .firstOrNull()
+                ?.let { interfaceName -> classDefByOrNull { it.type == interfaceName } }
+                ?: throw PatchException("Could not find context menu item interface.")
 
-                val castContextMenuItemStubIndex = indexOfFirstInstructionOrThrow {
-                    getReference<TypeReference>()?.type == CONTEXT_MENU_ITEM_CLASS_DESCRIPTOR_PLACEHOLDER
-                }
-                val contextMenuItemRegister = getInstruction<OneRegisterInstruction>(castContextMenuItemStubIndex)
-                    .registerA
-                val getContextMenuItemStubViewModelIndex = indexOfFirstInstructionOrThrow {
-                    getReference<MethodReference>()?.definingClass == CONTEXT_MENU_ITEM_CLASS_DESCRIPTOR_PLACEHOLDER
-                }
+            val contextMenuItemViewModelClassName = getViewModelFingerprint
+                .matchOrNull(contextMenuItemInterfaceClassDef)
+                ?.originalMethod
+                ?.returnType
+                ?: throw PatchException("Could not find context menu item view model class.")
 
-                val getViewModelDescriptor =
-                    "$contextMenuItemInterfaceClassDef->getViewModel()$contextMenuItemViewModelClassName"
-
-                replaceInstruction(
-                    castContextMenuItemStubIndex,
-                    "check-cast v$contextMenuItemRegister, $contextMenuItemInterfaceClassDef"
-                )
-                replaceInstruction(
-                    getContextMenuItemStubViewModelIndex,
-                    "invoke-interface { v$contextMenuItemRegister }, $getViewModelDescriptor"
-                )
+            val castContextMenuItemStubIndex = indexOfFirstInstructionOrThrow {
+                getReference<TypeReference>()?.type == CONTEXT_MENU_ITEM_CLASS_DESCRIPTOR_PLACEHOLDER
+            }
+            val contextMenuItemRegister = getInstruction<OneRegisterInstruction>(castContextMenuItemStubIndex)
+                .registerA
+            val getContextMenuItemStubViewModelIndex = indexOfFirstInstructionOrThrow {
+                getReference<MethodReference>()?.definingClass == CONTEXT_MENU_ITEM_CLASS_DESCRIPTOR_PLACEHOLDER
             }
 
-            contextMenuViewModelConstructorFingerprint.match(contextMenuViewModelClassDef).method.apply {
-                val itemsListParameter = parameters.indexOfFirst { it.type == "Ljava/util/List;" } + 1
-                val filterContextMenuItemsDescriptor =
-                    "$EXTENSION_CLASS_DESCRIPTOR->filterContextMenuItems(Ljava/util/List;)Ljava/util/List;"
+            val getViewModelDescriptor =
+                "$contextMenuItemInterfaceClassDef->getViewModel()$contextMenuItemViewModelClassName"
 
-                addInstructions(
-                    0,
-                    """
-                        invoke-static { p$itemsListParameter }, $filterContextMenuItemsDescriptor
-                        move-result-object p$itemsListParameter
-                    """
-                )
-            }
+            replaceInstruction(
+                castContextMenuItemStubIndex,
+                "check-cast v$contextMenuItemRegister, $contextMenuItemInterfaceClassDef"
+            )
+            replaceInstruction(
+                getContextMenuItemStubViewModelIndex,
+                "invoke-interface { v$contextMenuItemRegister }, $getViewModelDescriptor"
+            )
+        }
+
+        contextMenuViewModelConstructorFingerprint.match(contextMenuViewModelClassDef).method.apply {
+            val itemsListParameter = parameters.indexOfFirst { it.type == "Ljava/util/List;" } + 1
+            val filterContextMenuItemsDescriptor =
+                "$EXTENSION_CLASS_DESCRIPTOR->filterContextMenuItems(Ljava/util/List;)Ljava/util/List;"
+
+            addInstructions(
+                0,
+                """
+                    invoke-static { p$itemsListParameter }, $filterContextMenuItemsDescriptor
+                    move-result-object p$itemsListParameter
+                """
+            )
         }
 
 
